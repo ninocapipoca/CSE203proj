@@ -1,3 +1,4 @@
+
 (* -------------------------------------------------------------------- *)
 Require Import ssreflect ssrbool List.
 
@@ -115,30 +116,66 @@ Definition lang1 : language :=
 (* Q1. We now ask you to define the following languages                 *)
 
 (*  Given a word `w0`, the language that only contains the word `w0`.   *)
-Definition langW w0 : language := todo.
+(* EXPL: you check if the input word is exactly w0 *)
+Definition langW w0 : language := 
+  fun w => w = w0.
 
 (* Given a sequence `ws` of words, the language that contains all the   *)
 (* the words `ws` and only these words.                                 *)
-Definition langF (ws : list word) : language := todo.
+
+(* EXPL: for all the words you check if they are in the desired ws list *)
+Definition langF (ws : list word) : language := 
+  fun w => In w ws.
 
 (* Given a letter `x`, the language that only contains the letter `x`   *)
 (* seen as a word of length 1.                                          *)
-Definition langA x : language := todo.
+
+(* EXPL: since x is an input letter, you check if the word w is equal to
+x in word form. But x is not in word form yet, so you append it to an
+empty list (nil) and check*)
+Definition langA x : language := 
+  fun w => w = (cons x nil).
 
 (* The union of the two languages `L` and `G`.                          *)
-Definition langU L G : language := todo.
+(* EXPL: if w is in L or in G then it is in their union *)
+Definition langU L G : language := 
+  fun w => L w \/ G w.
 
 (* The intersection of the two languages `L` and `G`.                   *)
-Definition langI L G : language := todo.
+(* EXPL: if w is in L and G then it is in their intersection *)
+Definition langI L G : language := 
+  fun w => L w /\ G w.
 
 (* The concatenation of the two languages `L` and `G`.                  *)
-Definition langS L G : language := todo.
+(* the concatenation of L & G    { w1 · w2 | w1 ∈ L, w2 ∈ G }           *)
+(* EXPL: if w can be decompsed into w1 and w2 each in two different languages
+ then it is the result of the concatenation of two languages *)
+Definition langS L G : language := 
+  fun w => exists w1 w2, L w1 /\ G w2.
 
 (* The Kleene closure of the language `L`                               *)
-Definition langK L : language := todo.
+(* the Kleene closure of L       L* = { w_1 ... w_n | n \in ℕ, w_i ∈ L }  *)
+(* EXPL: the nicest way to do this is with an inductive def. Conceptually,
+ the closure is all possible concatenations, so for instance if I have 
+ L = {a} then L* = nil, a, aa, aaa, aaaa, etc, for all n. Then the stuff
+ below can be deduced intuitively. Another example, if L = {a,b} then 
+ a is clearly in the closure, b is clearly in the closure, then ab is also
+ clearly in the closure (as it is a concatenation of two words in l, of 
+ total length 2. *)
+Inductive langK L : language := 
+  | langK_nil : langK L nil (* the empty word is in the closure *)
+  | langK_one : forall w, L w -> langK L w (* if w is in L then it is in the closure *)
+(* if w1 is in the closure then [ if w2 is in the closure, then the concatenation of them
+  is in the closure] *)
+  | lankK_two : forall w1 w2, langK L w1 -> langK L w2 -> langK L (w1 ++ w2). 
+
+
+  
+
 
 (* The mirror of the language `L` (You can use the `rev`, that reversed *)
 (* a list, from the standard library. *)
+(*  - the mirror of L               rev(L) = { rev(w) | w ∈ L } *)
 Definition langM L : language := todo.
 
 (* -------------------------------------------------------------------- *)
