@@ -95,6 +95,16 @@ Notation word := (list A).
 
 Notation language := (word -> Prop).
 
+(* THINGS THAT WILL BE USEFUL LATER *************************************)
+Theorem app_nil: forall A (l: list A), app l nil = l.
+Proof.
+move => A l.
+induction l.
+simpl. trivial.
+simpl. rewrite IHl.
+trivial.
+Qed.
+
 (* -------------------------------------------------------------------- *)
 (* From now use, we assume that L, G, H denote languages, x, y denote   *)
 (* letters and that and w denotes a word.                               *)
@@ -148,10 +158,9 @@ Definition langI L G : language :=
 
 (* The concatenation of the two languages `L` and `G`.                  *)
 (* the concatenation of L & G    { w1 · w2 | w1 ∈ L, w2 ∈ G }           *)
-(* EXPL: if w can be decompsed into w1 and w2 each in two different languages
- then it is the result of the concatenation of two languages *)
+(* EXPL: check if w = w1 + w2 and check the condition on the right (shown above) *)
 Definition langS L G : language := 
-  fun w => exists w1 w2, L w1 /\ G w2.
+  fun w => exists w1 w2, (app w1 w2) = w /\ L w1 /\ G w2.
 
 (* The Kleene closure of the language `L`                               *)
 (* the Kleene closure of L       L* = { w_1 ... w_n | n \in ℕ, w_i ∈ L }  *)
@@ -169,14 +178,15 @@ Inductive langK L : language :=
   is in the closure] *)
   | lankK_two : forall w1 w2, langK L w1 -> langK L w2 -> langK L (w1 ++ w2). 
 
-
-  
-
-
 (* The mirror of the language `L` (You can use the `rev`, that reversed *)
 (* a list, from the standard library. *)
 (*  - the mirror of L               rev(L) = { rev(w) | w ∈ L } *)
-Definition langM L : language := todo.
+(* EXPL: to check if a word is in the reverse language, we can check if its reverse 
+(kinda like the reverse of the reverse) is in the "original" language. Eg: if 
+L = {"apple"} and M (the reverse) = {"elppa"}, to check if "elppa" is in M we 
+check if "apple" is in L *)
+Definition langM L : language := 
+  fun w => L (rev w).
 
 (* -------------------------------------------------------------------- *)
 (* Given two languages, we will consider `L` & `G` equal iff they       *)
@@ -189,13 +199,34 @@ Infix "=L" := eqL (at level 90).
 (* Q2. Prove the following equivalances:                                *)
 
 Lemma concat0L L : langS lang0 L =L lang0.
-Proof. todo. Qed.
+(* concatenation, empty lang, L = L, empty lang *)
+Proof.
+split.
+unfold lang0. unfold langS. (* write according to definition *)
+move => [w1 [w2 h]]. (*says that (_:word) and w2 are words, and sets False /\ L w2 as the hyp *)
+apply h. (* false is not provable alone, so we use h1. this works because false -> false and false -> true *)
+(* i.e. prop starting w false is always true *)
+unfold lang0. done. (* done tries to solve by trivial means, which works because we have false -> false *)
+Qed.
 
 Lemma concatL0 L : langS L lang0 =L lang0.
-Proof. todo. Qed.
+Proof. 
+(* follows the same logic as the one above.*)
+split.
+unfold lang0. unfold langS.
+move => [w1 [w2 h]]. apply h. 
+(*h is now the other way around but we will either get true /\ false or false /\ false which are both false*)
+(* so we can still use h*)
+unfold lang0. done.
+Qed.
 
 Lemma concat1L L : langS lang1 L =L L.
-Proof. todo. Qed.
+Proof.
+split.
+unfold lang1. unfold langS.
+move => [w1 [w2 [h1 [h2 h3]]]].
+rewrite h3 in h1.
+Qed.
 
 Lemma concatL1 L : langS L lang1 =L L.
 Proof. todo. Qed.
