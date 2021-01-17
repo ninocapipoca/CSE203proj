@@ -271,6 +271,7 @@ Inductive regular : language -> Prop :=
 
   (* The empty language is regular *)
 | REmpty : regular lang0
+| RVoid : regular lang1
 
 (* TODO: to be completed *)
 .
@@ -332,7 +333,9 @@ Inductive regexp : Type :=
 | RE_Empty : regexp
 | RE_Void  : regexp
 | RE_Atom  : A -> regexp
-
+| RE_Disjunction : regexp -> regexp -> regexp
+| RE_Concat  : regexp -> regexp -> regexp
+| RE_Kleene  : regexp -> regexp
   (* TO BE COMPLETED *)
 .
 
@@ -354,14 +357,19 @@ Implicit Types (r : regexp).
 
 Fixpoint interp (r : regexp) {struct r} : language :=
   match r with
-  | _ => todo
+  | RE_Empty => lang0
+  | RE_Void => lang1
+  | RE_Atom A => langA A
+  | RE_Disjunction r1 r2 => langU (interp r1) (interp r2)
+  | RE_Concat r1 r2 => langS (interp r1) (interp r2)
+  | RE_Kleene regexp => langK (interp regexp)
   end.
 
 (* Q8. show that the interpretation of a regular expression is a        *)
 (*     regular language:                                                *)
 
 Lemma regular_regexp r : regular (interp r).
-Proof. todo. Qed.
+Proof. case r. simpl. apply REmpty. simpl. apply RVoid. todo. todo. todo. todo. Qed.
 
 (* Q9. show that any regular language can be interpreted as a           *)
 (*     regular expression:                                              *)
@@ -375,12 +383,15 @@ Proof. todo. Qed.
 (* Q10. write a binary predicate eqR : regexp -> regexp -> Prop s.t.    *)
 (*      eqR r1 r2 iff r1 and r2 are equivalent regexp.                  *)
 
-Definition eqR (r1 r2 : regexp) : Prop := todo.
+Definition eqR (r1 r2 : regexp) : Prop := 
+  forall w, (interp r1) w <-> (interp r2) w.
 
 Infix "~" := eqR (at level 90).
 
 (* Q11. state and prove the following regexp equivalence:               *)
 (*           (a|b)* ~ ( a*b* )*                                         *)
+Lemma Q11 (a b : regexp): todo.
+Proof. todo. Qed.
 
 (* ==================================================================== *)
 (*                          REGEXP MATCHING                             *)
@@ -411,6 +422,12 @@ Infix "~" := eqR (at level 90).
 (*      ∀ r, contains0 r ⇔ ε ∈ [e]                                      *)
 
 Definition contains0 (r : regexp) : bool := todo.
+  (*match r with
+  | RE_Void => true
+  | RE_Empty => false
+  | _ => contains0 r
+  end.*)
+  
 
 (* Q13. prove that your definition of `contains0` is correct:           *)
 
