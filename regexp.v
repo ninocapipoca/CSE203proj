@@ -254,6 +254,10 @@ Proof. todo. Qed.
 Lemma regularM L : regular L -> regular (langM L).
 Proof. todo. Qed.
 
+(****************** CAROLINA WILL DO THE SECTION ABOVE ******************************)
+(* I figured it was better if we split in half so we don't end up redoing the same 
+things twice or accidentally overwriting each other's code*)
+
 (* ==================================================================== *)
 (*                        REGULAR EXPRESSIONS                           *)
 
