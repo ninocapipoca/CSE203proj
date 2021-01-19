@@ -95,15 +95,6 @@ Notation word := (list A).
 
 Notation language := (word -> Prop).
 
-(* THINGS THAT WILL BE USEFUL LATER *************************************)
-Theorem app_nil: forall A (l: list A), app l nil = l.
-Proof.
-move => A l.
-induction l.
-simpl. trivial.
-simpl. rewrite IHl.
-trivial.
-Qed.
 
 (* -------------------------------------------------------------------- *)
 (* From now use, we assume that L, G, H denote languages, x, y denote   *)
@@ -176,7 +167,7 @@ Inductive langK L : language :=
   | langK_one : forall w, L w -> langK L w (* if w is in L then it is in the closure *)
 (* if w1 is in the closure then [ if w2 is in the closure, then the concatenation of them
   is in the closure] *)
-  | lankK_two : forall w1 w2, langK L w1 -> langK L w2 -> langK L (w1 ++ w2). 
+  | langK_two : forall w1 w2, langK L w1 -> langK L w2 -> langK L (w1 ++ w2). 
 
 (* The mirror of the language `L` (You can use the `rev`, that reversed *)
 (* a list, from the standard library. *)
@@ -225,23 +216,69 @@ Proof.
 split.
 unfold lang1. unfold langS.
 move => [w1 [w2 [h1 [h2 h3]]]].
-rewrite h3 in h1.
+rewrite h2 in h1. simpl in h1. rewrite h1 in h3.
+apply h3.
+unfold lang1. unfold langS.
+move => h.
+exists nil. exists w.
+done.
 Qed.
 
+(*************************** TO FINISH ********************)
 Lemma concatL1 L : langS L lang1 =L L.
-Proof. todo. Qed.
+Proof. 
+split.
+unfold lang1. unfold langS.
+move => [w1 [w2 [h1 [h2 h3]]]].
+rewrite h3 in h1. rewrite app_nil_r in h1. rewrite h1 in h2.   (* app_nil_r says that l ++ [] = l *)
+apply h2.
+unfold lang1. unfold langS.
+move => h.
+exists nil. exists w.
+split. trivial. (*to be continued*)
+Admitted.
+(* ---------------------------------------------------------- *)
 
+(************************* TO DO ****************************)
 Lemma concatA L G H : langS (langS L G) H =L langS L (langS G H).
-Proof. todo. Qed.
+Proof.
+split.
+(* TO DO *)
+Admitted.
+(* ---------------------------------------------------------- *)
 
 Lemma unionC L G : langU L G =L langU G L.
-Proof. todo. Qed.
+Proof.
+split. unfold langU.
+case. (* because of the "or" *)
+move => h1. right. apply h1.
+move => h2. left. apply h2.
+unfold langU.
+case.
+move => h3. right. apply h3.
+move => h4. left. apply h4.
+Qed.
+
 
 Lemma interC L G : langI L G =L langI G L.
-Proof. todo. Qed.
+Proof.
+split.
+unfold langI.
+split. (* because of the "and" *)
+apply H. apply H.
+unfold langI.
+split.
+apply H. apply H.
+Qed.
 
 Lemma langKK L : langK (langK L) =L langK L.
-Proof. todo. Qed.
+Proof.
+split.
+move => h. induction h. (* so we can use the inductive def from earlier!! *)
+apply langK_nil. apply H.
+apply langK_two. apply IHh1. apply IHh2. (* both apply and assumption would work here *)
+apply langK_one.
+Qed.
 
 (* Note that, since languages are represented as indicator functions    *)
 (* over `Prop`, we cannot assess that `L =L G` implies `L = G`.         *)
