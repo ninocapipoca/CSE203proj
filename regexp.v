@@ -224,7 +224,7 @@ exists nil. exists w.
 done.
 Qed.
 
-(*************************** TO FINISH ********************)
+
 Lemma concatL1 L : langS L lang1 =L L.
 Proof. 
 split.
@@ -234,10 +234,11 @@ rewrite h3 in h1. rewrite app_nil_r in h1. rewrite h1 in h2.   (* app_nil_r says
 apply h2.
 unfold lang1. unfold langS.
 move => h.
-exists nil. exists w.
-split. trivial. (*to be continued*)
-Admitted.
-(* ---------------------------------------------------------- *)
+exists w. exists nil.
+rewrite app_nil_r. 
+done. (* you can also split 3 times and see that the rest is trivial *)
+Qed.
+
 
 (************************* TO DO ****************************)
 Lemma concatA L G H : langS (langS L G) H =L langS L (langS G H).
@@ -427,7 +428,7 @@ Infix "~" := eqR (at level 90).
 
 (* Q11. state and prove the following regexp equivalence:               *)
 (*           (a|b)* ~ ( a*b* )*                                         *)
-Lemma Q11 (a b: regexp) : RE_Kleene (RE_Disjunction a b) ~ RE_Kleene( RE_Concat (RE_Kleene (a)) (RE_Kleene (b))).
+Lemma Q11 (a b : regexp): todo.
 Proof. todo. Qed.
 
 (* ==================================================================== *)
@@ -458,21 +459,18 @@ Proof. todo. Qed.
 (*                                                                      *)
 (*      ∀ r, contains0 r ⇔ ε ∈ [e]                                      *)
 
-Fixpoint contains0 (r : regexp) : Prop :=
-  match r with
+Definition contains0 (r : regexp) : bool := todo.
+  (*match r with
   | RE_Void => true
   | RE_Empty => false
-  | RE_Atom A => false
-  | RE_Kleene r1 => contains0 r1
-  | RE_Disjunction r1 r2 => contains0 r1 \/ contains0 r2
-  | RE_Concat r1 r2 => contains0 r1 \/ contains0 r2
-  end.
+  | _ => contains0 r
+  end.*)
   
+
 (* Q13. prove that your definition of `contains0` is correct:           *)
 
-
 Lemma contains0_ok r : contains0 r <-> interp r nil.
-Proof. case r. simpl. split. discriminate. todo. simpl. split. todo. todo. todo. todo. todo. todo. Qed.
+Proof. todo. Qed.
 
 (* We give below the definition of the Brzozowski's derivative:         *)
 (*                                                                      *)
