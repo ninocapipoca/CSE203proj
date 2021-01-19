@@ -427,7 +427,7 @@ Infix "~" := eqR (at level 90).
 
 (* Q11. state and prove the following regexp equivalence:               *)
 (*           (a|b)* ~ ( a*b* )*                                         *)
-Lemma Q11 (a b : regexp): todo.
+Lemma Q11 (a b: regexp) : RE_Kleene (RE_Disjunction a b) ~ RE_Kleene( RE_Concat (RE_Kleene (a)) (RE_Kleene (b))).
 Proof. todo. Qed.
 
 (* ==================================================================== *)
@@ -458,18 +458,21 @@ Proof. todo. Qed.
 (*                                                                      *)
 (*      ∀ r, contains0 r ⇔ ε ∈ [e]                                      *)
 
-Definition contains0 (r : regexp) : bool := todo.
-  (*match r with
+Fixpoint contains0 (r : regexp) : Prop :=
+  match r with
   | RE_Void => true
   | RE_Empty => false
-  | _ => contains0 r
-  end.*)
+  | RE_Atom A => false
+  | RE_Kleene r1 => contains0 r1
+  | RE_Disjunction r1 r2 => contains0 r1 \/ contains0 r2
+  | RE_Concat r1 r2 => contains0 r1 \/ contains0 r2
+  end.
   
-
 (* Q13. prove that your definition of `contains0` is correct:           *)
 
+
 Lemma contains0_ok r : contains0 r <-> interp r nil.
-Proof. todo. Qed.
+Proof. case r. simpl. split. discriminate. todo. simpl. split. todo. todo. todo. todo. todo. todo. Qed.
 
 (* We give below the definition of the Brzozowski's derivative:         *)
 (*                                                                      *)
