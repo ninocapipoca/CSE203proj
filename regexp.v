@@ -310,6 +310,12 @@ Inductive regular : language -> Prop :=
   (* The empty language is regular *)
 | REmpty : regular lang0
 | RVoid : regular lang1
+| RAtom x A of (A x): regular (langA x)
+| RUnion L G of regular L & regular G: regular (langU L G)
+| RConcat L G of regular L & regular G: regular (langS L G)
+| RKleene G of regular G: regular (langK G)
+(*I hope this is right*)
+
 
 (* TODO: to be completed *)
 .
@@ -317,7 +323,7 @@ Inductive regular : language -> Prop :=
 (* -------------------------------------------------------------------- *)
 (* Q4. prove that `langW w` is regular.                                 *)
 Lemma regularW w : regular (langW w).
-Proof. todo. Qed.
+Proof. unfold langW. case w. todo. Qed.
 
 (* -------------------------------------------------------------------- *)
 (* Q5. prove that `langM L` is regular, given that L is regular.        *)
@@ -460,11 +466,11 @@ Proof. todo. Qed.
 (*      ∀ r, contains0 r ⇔ ε ∈ [e]                                      *)
 
 Definition contains0 (r : regexp) : bool := todo.
-  (*match r with
+  match r with
   | RE_Void => true
   | RE_Empty => false
   | _ => contains0 r
-  end.*)
+  end.
   
 
 (* Q13. prove that your definition of `contains0` is correct:           *)
