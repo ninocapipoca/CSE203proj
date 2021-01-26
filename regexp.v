@@ -414,7 +414,11 @@ Fixpoint interp (r : regexp) {struct r} : language :=
 (*     regular language:                                                *)
 
 Lemma regular_regexp r : regular (interp r).
-Proof. case r. simpl. apply REmpty. simpl. apply RVoid. simpl. todo. simpl.
+Proof. case r. simpl. apply REmpty. simpl. apply RVoid. simpl. 
+
+unfold langA. todo.
+
+simpl.
 move => r0 r1. apply RUnion. 
 
 induction r0. apply REmpty. apply RVoid. todo.
@@ -468,7 +472,7 @@ Infix "~" := eqR (at level 90).
 
 (* Q11. state and prove the following regexp equivalence:               *)
 (*           (a|b)* ~ ( a*b* )*                                         *)
-Lemma Q11 (a b : regexp): todo.
+Lemma Q11 (a b : A): RE_Kleene (RE_Disjunction (RE_Atom a) (RE_Atom b)) ~ RE_Kleene( RE_Concat (RE_Kleene (RE_Atom a)) (RE_Kleene (RE_Atom b)) ).
 Proof. todo. Qed.
 
 (* ==================================================================== *)
@@ -574,7 +578,29 @@ Definition rmatch (r : regexp) (w : word) : bool := todo.
 
 Lemma Brzozowski_correct (x : A) (w : word) (r : regexp) :
   interp (Brzozowski x r) w -> interp r (x :: w).
-Proof. todo. Qed.
+Proof. case r. simpl. unfold lang0. trivial. simpl. unfold lang0. unfold lang1. move => fls. case fls. 
+
+todo.
+
+simpl. induction r0. simpl. unfold langU. move => r0. case. unfold lang0. case. unfold lang0.
+induction r0. simpl. unfold lang0. case. simpl. unfold lang0. case.
+
+simpl. case Aeq. simpl. unfold lang1. move => wnil. rewrite wnil. right. unfold langA. todo.
+
+simpl. unfold lang0. case.
+
+simpl. unfold langU. case. 
+move => h. move: (IHr0_1 h). case. case. move => a. right. left. apply a.
+move => h. move: (IHr0_2 h). case. case. move => a. right. right. apply a.
+
+todo. (*simpl. unfold langS. unfold langU. case.*)
+
+simpl. move => h. right. move: (IHr0 h). case. case. (*huh?*)todo.
+
+todo. todo. todo. todo. todo. todo. todo.
+
+(*this will take forever*)
+Qed.
 
 (* Q17. show that `rmatch` is correct.                                  *)
 
@@ -582,8 +608,8 @@ Lemma rmatch_correct (r : regexp) (w : word):
   rmatch r w -> interp r w.
 Proof. todo. Qed.
 
-(* Q18. (HARD - OPTIONAL) show that `rmatch` is complete.               *)
+(* Q18. (HARD - OPTIONAL) show that `rmatch` is complete.               
 
 Lemma rmatch_complete (r : regexp) (w : word):
   interp r w -> rmatch r w.
-Proof. todo. Qed.
+Proof. todo. Qed. *)
