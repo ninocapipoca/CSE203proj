@@ -338,7 +338,7 @@ move => lhs.
 unfold langS. (*gives sth more explicit that we can work with*)
 unfold langW in lhs. (*does the same but in the lhs*)
 (*We need two words which when concatenated give a::w 
-such that's the first word is in langA a and the second is in langW w*)
+such that the first word is in langA a and the second is in langW w*)
 exists (a::nil). exists w.
 split. simpl. rewrite lhs. trivial.
 split. done. done.
