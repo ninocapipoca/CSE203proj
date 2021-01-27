@@ -310,11 +310,10 @@ Inductive regular : language -> Prop :=
   (* The empty language is regular *)
 | REmpty : regular lang0
 | RVoid : regular lang1
-| RAtom x A of (In x A): regular (langA x)
+| RAtom x: regular (langA x)
 | RUnion L G of regular L & regular G: regular (langU L G)
 | RConcat L G of regular L & regular G: regular (langS L G)
 | RKleene G of regular G: regular (langK G)
-(*I hope this is right*)
 
 
 (* TODO: to be completed *)
@@ -323,13 +322,44 @@ Inductive regular : language -> Prop :=
 (* -------------------------------------------------------------------- *)
 (* Q4. prove that `langW w` is regular.                                 *)
 Lemma regularW w : regular (langW w).
-Proof. unfold langW. case w. apply RVoid.
-move => a l. todo. Qed.
+Proof. 
+induction w.
+move: REq => REq.
+move: RVoid => RVoid.
+apply REq with lang1.
+done. done.
+(**if (langS (langA a) (langW w)) and langW (a::w) 
+are equivalent then langW (a::w) is regular which is what we want**)
+apply REq with (langS (langA a) (langW w)).
+apply RConcat.
+apply RAtom. apply IHw.
+split.
+move => lhs.
+unfold langS.
+unfold langW in lhs.
+exists (a::nil). exists w.
+split. simpl. rewrite lhs. trivial.
+split. done. done.
+
+unfold langS.
+move => [w1 [w2]].
+move => [sum [la lw]].
+unfold langW.
+unfold langA in la.
+unfold langW in lw.
+rewrite la in sum.
+rewrite lw in sum.
+simpl in sum.
+rewrite sum. trivial.
+Qed.
 
 (* -------------------------------------------------------------------- *)
 (* Q5. prove that `langM L` is regular, given that L is regular.        *)
 Lemma regularM L : regular L -> regular (langM L).
-Proof. move => regL. unfold langM. todo. Qed.
+Proof.
+move => rhs.
+unfold langM.
+Admitted.
 
 (****************** CAROLINA WILL DO THE SECTION ABOVE ******************************)
 (* I figured it was better if we split in half so we don't end up redoing the same 
@@ -381,7 +411,6 @@ Inductive regexp : Type :=
 | RE_Disjunction : regexp -> regexp -> regexp
 | RE_Concat  : regexp -> regexp -> regexp
 | RE_Kleene  : regexp -> regexp
-  (* TO BE COMPLETED *)
 .
 
 Implicit Types (r : regexp).
@@ -414,46 +443,13 @@ Fixpoint interp (r : regexp) {struct r} : language :=
 (*     regular language:                                                *)
 
 Lemma regular_regexp r : regular (interp r).
-Proof. case r. simpl. apply REmpty. simpl. apply RVoid. simpl. todo. simpl.
-move => r0 r1. apply RUnion. 
-
-induction r0. apply REmpty. apply RVoid. todo.
-simpl. apply RUnion. trivial. trivial.
-simpl. apply RConcat. trivial. trivial.
-simpl. apply RKleene. trivial.
-
-induction r1. apply REmpty. apply RVoid. todo.
-simpl. apply RUnion. trivial. trivial.
-simpl. apply RConcat. trivial. trivial.
-simpl. apply RKleene. trivial.
-
-move => r0 r1. apply RConcat. 
-
-induction r0. apply REmpty. apply RVoid. todo.
-simpl. apply RUnion. trivial. trivial.
-simpl. apply RConcat. trivial. trivial.
-simpl. apply RKleene. trivial.
-
-induction r1. apply REmpty. apply RVoid. todo.
-simpl. apply RUnion. trivial. trivial.
-simpl. apply RConcat. trivial. trivial.
-simpl. apply RKleene. trivial.
-
-move => r0. apply RKleene. 
-
-induction r0. apply REmpty. apply RVoid. todo.
-simpl. apply RUnion. trivial. trivial.
-simpl. apply RConcat. trivial. trivial.
-simpl. apply RKleene. trivial.
-Qed.
-(*Easier way ?*)
-
+Proof. case r. simpl. apply REmpty. simpl. apply RVoid. todo. todo. todo. todo. Qed.
 
 (* Q9. show that any regular language can be interpreted as a           *)
 (*     regular expression:                                              *)
 
 Lemma regexp_regular L : regular L -> exists r, L =L interp r.
-Proof. move => regL. unfold eqL. todo. Qed.
+Proof. todo. Qed.
 
 (* Of course, it may happen that two regular expressions represent      *)
 (* the same language: r1 ~ r2 iff [r1] = [r2].                          *)
@@ -499,35 +495,18 @@ Proof. todo. Qed.
 (*                                                                      *)
 (*      ∀ r, contains0 r ⇔ ε ∈ [e]                                      *)
 
-Fixpoint contains0 (r : regexp) : bool :=
+Definition contains0 (r : regexp) : bool := todo.
   match r with
+  | RE_Void => true
   | RE_Empty => false
-  | RE_Void  => true
-  | RE_Atom A => false
-  | RE_Disjunction r1 r2 => contains0 r1 || contains0 r2
-  | RE_Concat r1 r2 => contains0 r1 || contains0 r2
-  | RE_Kleene regexp => contains0 regexp
+  | _ => contains0 r
   end.
   
 
 (* Q13. prove that your definition of `contains0` is correct:           *)
 
 Lemma contains0_ok r : contains0 r <-> interp r nil.
-Proof. induction r. 
-
-simpl. unfold lang0. split. auto. auto.
-
-simpl. unfold lang1. split. auto. auto.
-
-simpl. unfold langA. todo.
-
-simpl. todo.
-
-simpl. todo.
-
-simpl. todo.
-
- Qed.
+Proof. todo. Qed.
 
 (* We give below the definition of the Brzozowski's derivative:         *)
 (*                                                                      *)
@@ -553,17 +532,7 @@ Parameter Aeq : A -> A -> bool.
 (* Here, `Aeq x y` has to be read as `Aeq x y = true`                   *)
 Axiom Aeq_dec : forall (x y : A), Aeq x y <-> x = y.
 
-Fixpoint Brzozowski (x : A) (r : regexp) : regexp :=
-  match r with
-  | RE_Empty => RE_Empty
-  | RE_Void  => RE_Empty
-  | RE_Atom A => if (Aeq x A) then RE_Void else RE_Empty
-  | RE_Disjunction r1 r2 => RE_Disjunction (Brzozowski x r1) (Brzozowski x r2)
-  | RE_Concat r1 r2 => RE_Disjunction (RE_Concat (Brzozowski x r1) r2) (RE_Concat (if contains0 r1 then RE_Void else RE_Empty) (Brzozowski x r2))
-  | RE_Kleene regexp => (Brzozowski x regexp)
-  end.
-  
-  
+Definition Brzozowski (x : A) (r : regexp) : regexp := todo.
 
 (* Q15. write a function `rmatch` s.t. `rmatch r w` checks wether a     *)
 (*      word `w` matches a given regular expression `r`.                *)
