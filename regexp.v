@@ -330,24 +330,26 @@ apply REq with lang1.
 done. done.
 (**if (langS (langA a) (langW w)) and langW (a::w) 
 are equivalent then langW (a::w) is regular which is what we want**)
-apply REq with (langS (langA a) (langW w)).
-apply RConcat.
-apply RAtom. apply IHw.
-split.
+apply REq with (langS (langA a) (langW w)). (*this is easier*)
+apply RConcat. (*splits things up*)
+apply RAtom. apply IHw. (*deals with subgoals according to their form*)
+split. (*splits equality into implications*)
 move => lhs.
-unfold langS.
-unfold langW in lhs.
+unfold langS. (*gives sth more explicit that we can work with*)
+unfold langW in lhs. (*does the same but in the lhs*)
+(*We need two words which when concatenated give a::w 
+such that's the first word is in langA a and the second is in langW w*)
 exists (a::nil). exists w.
 split. simpl. rewrite lhs. trivial.
 split. done. done.
 
 unfold langS.
 move => [w1 [w2]].
-move => [sum [la lw]].
+move => [sum [la lw]]. (*moves the ands separately*)
 unfold langW.
 unfold langA in la.
 unfold langW in lw.
-rewrite la in sum.
+rewrite la in sum. (*rewrite to make something useful*)
 rewrite lw in sum.
 simpl in sum.
 rewrite sum. trivial.
@@ -443,82 +445,13 @@ Fixpoint interp (r : regexp) {struct r} : language :=
 (*     regular language:                                                *)
 
 Lemma regular_regexp r : regular (interp r).
-
-Proof. induction r. apply REmpty. apply RVoid. apply RAtom. apply RUnion. done. done.
-apply RConcat. done. done. apply RKleene. done.
-Qed.
-
-(*case r. simpl. apply REmpty. simpl. apply RVoid. simpl. 
-
-unfold langA. todo.
-
-simpl.
-move => r0 r1. apply RUnion. 
-
-induction r0. apply REmpty. apply RVoid. todo.
-simpl. apply RUnion. trivial. trivial.
-simpl. apply RConcat. trivial. trivial.
-simpl. apply RKleene. trivial.
-
-induction r1. apply REmpty. apply RVoid. todo.
-simpl. apply RUnion. trivial. trivial.
-simpl. apply RConcat. trivial. trivial.
-simpl. apply RKleene. trivial.
-
-move => r0 r1. apply RConcat. 
-
-induction r0. apply REmpty. apply RVoid. todo.
-simpl. apply RUnion. trivial. trivial.
-simpl. apply RConcat. trivial. trivial.
-simpl. apply RKleene. trivial.
-
-induction r1. apply REmpty. apply RVoid. todo.
-simpl. apply RUnion. trivial. trivial.
-simpl. apply RConcat. trivial. trivial.
-simpl. apply RKleene. trivial.
-
-move => r0. apply RKleene. 
-
-induction r0. apply REmpty. apply RVoid. todo.
-simpl. apply RUnion. trivial. trivial.
-simpl. apply RConcat. trivial. trivial.
-simpl. apply RKleene. trivial.
-Qed.*)
-
+Proof. case r. simpl. apply REmpty. simpl. apply RVoid. todo. todo. todo. todo. Qed.
 
 (* Q9. show that any regular language can be interpreted as a           *)
 (*     regular expression:                                              *)
 
-Lemma trans (L G H: language): L =L G -> G =L H -> L =L H.
-Proof. unfold eqL. move => LG GH. move => w. rewrite LG. rewrite GH. reflexivity.
-Qed.
-
-Lemma interpUnion (L1 L2 G1 G2: language): L1 =L L2 -> G1 =L G2 -> langU L1 G1 =L langU L2 G2.
-Proof. unfold eqL. move => L12 G12. unfold langU. move => w. rewrite L12. rewrite G12. reflexivity.
-Qed.
-
-Lemma interpConcat (L1 L2 G1 G2: language): L1 =L L2 -> G1 =L G2 -> langS L1 G1 =L langS L2 G2.
-Proof. unfold eqL. move => L12 G12. unfold langS. move => w. split. move => h. 
-destruct h. destruct H. destruct H. destruct H0. exists x. exists x0. rewrite H. split. trivial.
-split. apply L12. trivial. apply G12. trivial.
-move => h. destruct h. destruct H. destruct H. destruct H0. exists x. exists x0. rewrite H. split. trivial.
-split. apply L12. trivial. apply G12. trivial.
-Qed.
-
-Lemma interpKleene (L G: language): L =L G -> langK L =L langK G.
-Proof. unfold eqL. move => LG. move => w. induction w. split. move => Lnil. apply langK_nil.
-move => Gnil. apply langK_nil.
-Admitted.
-
 Lemma regexp_regular L : regular L -> exists r, L =L interp r.
-Proof. move => rL. induction rL. destruct IHrL. exists x. move: H H0. apply trans.
-exists RE_Empty. simpl. done.
-exists RE_Void. simpl. done.
-exists (RE_Atom x). simpl. done.
-destruct IHrL1. destruct IHrL2. exists (RE_Disjunction x x0). simpl. apply interpUnion. trivial. trivial.
-destruct IHrL1. destruct IHrL2. exists (RE_Concat x x0). simpl. apply interpConcat. trivial. trivial.
-destruct IHrL. exists (RE_Kleene x). simpl. apply interpKleene. trivial.
-Qed.
+Proof. todo. Qed.
 
 (* Of course, it may happen that two regular expressions represent      *)
 (* the same language: r1 ~ r2 iff [r1] = [r2].                          *)
@@ -527,13 +460,13 @@ Qed.
 (*      eqR r1 r2 iff r1 and r2 are equivalent regexp.                  *)
 
 Definition eqR (r1 r2 : regexp) : Prop := 
-  eqL (interp r1) (interp r2).
+  forall w, (interp r1) w <-> (interp r2) w.
 
 Infix "~" := eqR (at level 90).
 
 (* Q11. state and prove the following regexp equivalence:               *)
 (*           (a|b)* ~ ( a*b* )*                                         *)
-Lemma Q11 (a b : A): RE_Kleene (RE_Disjunction (RE_Atom a) (RE_Atom b)) ~ RE_Kleene( RE_Concat (RE_Kleene (RE_Atom a)) (RE_Kleene (RE_Atom b)) ).
+Lemma Q11 (a b : regexp): todo.
 Proof. todo. Qed.
 
 (* ==================================================================== *)
@@ -568,33 +501,14 @@ Definition contains0 (r : regexp) : bool := todo.
   match r with
   | RE_Void => true
   | RE_Empty => false
-  | RE_Void  => true
-  | RE_Atom A => false
-  | RE_Disjunction r1 r2 => contains0 r1 || contains0 r2
-  | RE_Concat r1 r2 => contains0 r1 && contains0 r2
-  | RE_Kleene regexp => true (* not contains0 regexp*)
+  | _ => contains0 r
   end.
   
 
 (* Q13. prove that your definition of `contains0` is correct:           *)
 
 Lemma contains0_ok r : contains0 r <-> interp r nil.
-Proof. induction r. 
-
-simpl. unfold lang0. split. auto. auto.
-simpl. unfold lang1. split. auto. auto.
-simpl. done.
-simpl. unfold langU. split. move => cont. case a: (contains0 r1). left. apply IHr1. apply a.
-right. apply IHr2. move: cont. rewrite a. simpl. trivial.
-case a: (contains0 r1). done. simpl. case. move => b. apply IHr1 in b. move: b. rewrite a. done. apply IHr2.
-simpl. unfold langS. split. move => cont. exists nil. exists nil. split. trivial. split.
-apply IHr1. case a: (contains0 r1). trivial. move: cont. rewrite a. simpl. trivial.
-apply IHr2. case a: (contains0 r2). trivial. move: cont.  rewrite a. simpl. apply Bool.andb_true_iff.
-move => whole. destruct whole. destruct H. destruct H. destruct H0. apply app_eq_nil in H. destruct H.
-rewrite H in H0. apply IHr1 in H0. rewrite H2 in H1. apply IHr2 in H1. apply Bool.andb_true_iff. done.
-simpl. split. move => cont. apply langK_nil.
-trivial.
-Qed.
+Proof. todo. Qed.
 
 (* We give below the definition of the Brzozowski's derivative:         *)
 (*                                                                      *)
@@ -620,55 +534,27 @@ Parameter Aeq : A -> A -> bool.
 (* Here, `Aeq x y` has to be read as `Aeq x y = true`                   *)
 Axiom Aeq_dec : forall (x y : A), Aeq x y <-> x = y.
 
-Fixpoint Brzozowski (x : A) (r : regexp) : regexp :=
-  match r with
-  | RE_Empty => RE_Empty
-  | RE_Void  => RE_Empty
-  | RE_Atom A => if (Aeq x A) then RE_Void else RE_Empty
-  | RE_Disjunction r1 r2 => RE_Disjunction (Brzozowski x r1) (Brzozowski x r2)
-  | RE_Concat r1 r2 => RE_Disjunction (RE_Concat (Brzozowski x r1) r2) (RE_Concat (if contains0 r1 then RE_Void else RE_Empty) (Brzozowski x r2))
-  | RE_Kleene regexp => RE_Concat (Brzozowski x regexp) (RE_Kleene regexp)
-  end.
-  
-  
+Definition Brzozowski (x : A) (r : regexp) : regexp := todo.
 
 (* Q15. write a function `rmatch` s.t. `rmatch r w` checks wether a     *)
 (*      word `w` matches a given regular expression `r`.                *)
 
-Fixpoint rmatch (r : regexp) (w : word) : bool := 
-  match w with
-  | nil => if contains0 r then true else false
-  | a :: wr => rmatch (Brzozowski a r) wr
-  end.
+Definition rmatch (r : regexp) (w : word) : bool := todo.
 
 (* Q16. show that the `Brzozowski` function is correct.                 *)
 
 Lemma Brzozowski_correct (x : A) (w : word) (r : regexp) :
   interp (Brzozowski x r) w -> interp r (x :: w).
-Proof. induction r. simpl. unfold lang0. trivial.
-simpl. unfold lang0. done.
-simpl. case dec: Aeq. apply Aeq_dec in dec. simpl. unfold lang1. move => wnil. unfold langA. rewrite dec.
-rewrite wnil. reflexivity.
-simpl. unfold lang0. done.
-simpl. unfold langU. case. move => a. left. move: a. apply IHr1.
-move => a. right. move: a. apply IHr2.
-simpl. unfold langU. unfold langS.
-
-todo. 
-
-todo. 
-
-Qed.
+Proof. todo. Qed.
 
 (* Q17. show that `rmatch` is correct.                                  *)
 
-Lemma rmatch_correct (r : regexp) (w : word): rmatch r w -> interp r w.
-Proof. move: r. induction w. simpl. move => r. case cont: (contains0 r). move => true. apply contains0_ok. apply cont. done.
-simpl. move => r rm. apply Brzozowski_correct. move: rm. apply IHw.
-Qed.
+Lemma rmatch_correct (r : regexp) (w : word):
+  rmatch r w -> interp r w.
+Proof. todo. Qed.
 
-(* Q18. (HARD - OPTIONAL) show that `rmatch` is complete.               
+(* Q18. (HARD - OPTIONAL) show that `rmatch` is complete.               *)
 
 Lemma rmatch_complete (r : regexp) (w : word):
   interp r w -> rmatch r w.
-Proof. todo. Qed. *)
+Proof. todo. Qed.
